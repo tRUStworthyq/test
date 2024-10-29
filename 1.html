@@ -921,14 +921,19 @@
         </tr>
         </tbody>
         </table>
+        <div id="no-results" style="display: none;">
+            <p>К сожалению, такого ДК не найдено, попробуйте изменить запрос.</p>
+        </div>
         <script>
             document.getElementById('search-input').addEventListener('input', function() {
                 const searchQuery = this.value.toLowerCase();
                 const rows = document.querySelectorAll('tbody tr');
+                let hasVisibleRows = false;
         
                 rows.forEach((row, index) => {
-                    if (index === 0) return; // Пропускаем первую строку (заголовок)
-        
+                    if (index === 0) {
+                        return;
+                    }
                     const cells = row.querySelectorAll('td');
                     let match = false;
         
@@ -940,10 +945,30 @@
         
                     if (match) {
                         row.classList.remove('hidden');
+                        hasVisibleRows = true;
                     } else {
                         row.classList.add('hidden');
                     }
+        
+                    // Проверка для первой строки (заголовка)
+                    if (index === 0) {
+                        if (hasVisibleRows) {
+                            row.classList.remove('hidden');
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    }
                 });
+        
+                const noResultsMessage = document.getElementById('no-results');
+                const table = document.querySelector('table');
+                if (hasVisibleRows) {
+                    noResultsMessage.style.display = 'none';
+                    table.style.display = 'table';
+                } else {
+                    noResultsMessage.style.display = 'block';
+                    table.style.display = 'none';
+                }
             });
         </script>
 </body>
