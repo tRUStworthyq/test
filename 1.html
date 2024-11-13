@@ -287,37 +287,34 @@
             if (event.target.tagName === 'TD') {
                 const row = event.target.parentElement;
                 const detailsRow = row.nextElementSibling;
-                const isCollapsed = row.querySelector('td:first-child').classList.contains('collapsed');
+                const isCollapsed = row.querySelector('td.collapsed');
 
-                if (isCollapsed) {
-                    // Скрываем все столбцы, кроме "Название организации"
-                    document.querySelectorAll('th.collapsed, td.collapsed').forEach(cell => {
-                        cell.style.display = 'table-cell';
+                if (isCollapsed !== null) {
+                    document.querySelectorAll('th.collapsed').forEach(cell => {
+                        cell.classList.remove('collapsed')
                     });
                     row.querySelectorAll('td.collapsed').forEach(cell => {
-                        cell.style.display = 'table-cell';
+                        cell.classList.remove('collapsed')
                     });
-                    row.querySelector('td:first-child').classList.remove('collapsed');
                 } else {
-                    // Скрываем все столбцы, кроме "Название организации"
-                    document.querySelectorAll('th.collapsed, td.collapsed').forEach(cell => {
-                        cell.style.display = 'none';
+                    row.querySelectorAll('td').forEach(cell => {
+                        console.log(cell)
+                        cell.classList.add('collapsed')
                     });
-                    row.querySelectorAll('td.collapsed').forEach(cell => {
-                        cell.style.display = 'none';
-                    });
-                    row.querySelector('td:first-child').classList.add('collapsed');
+                    row.querySelector('td:first-child').classList.remove('collapsed')
                 }
 
                 // Проверяем, есть ли открытые строки
                 const anyRowOpen = Array.from(document.querySelectorAll('tbody tr')).some(row => {
-                    return !row.querySelector('td:first-child').classList.contains('collapsed');
+                    return !row.querySelectorAll('td')[1].classList.contains('collapsed');
                 });
+                console.log(anyRowOpen)
 
                 if (!anyRowOpen) {
-                    document.querySelectorAll('th.collapsed, td.collapsed').forEach(cell => {
-                        cell.style.display = 'none';
+                    document.querySelectorAll('th').forEach(cell => {
+                        cell.classList.add('collapsed')
                     });
+                    document.querySelector('th:first-child').classList.remove('collapsed')
                 }
             }
         });
