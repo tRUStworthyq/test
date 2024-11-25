@@ -11,11 +11,18 @@
         }
         .search-container {
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
         }
         .search-container input {
-            width: 100%;
+            flex: 1;
             padding: 10px;
             font-size: 16px;
+        }
+        .search-container button {
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-left: 10px;
         }
         table {
             width: 100%;
@@ -38,7 +45,7 @@
             transition: max-height 0.5s ease-in-out;
         }
         .details.show {
-            max-height: 500px; /* Высота должна быть достаточно большой, чтобы вместить все данные */
+            max-height: 500px;
         }
         .collapsed {
             display: none;
@@ -51,6 +58,7 @@
 <body>
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Введите название организации...">
+        <button id="search-button">Сделать запрос</button>
     </div>
     <table border="1" cellspacing="0" cellpadding="0">
         <thead>
@@ -295,19 +303,21 @@
                 return similarity >= 0.8;
             }
 
-            document.getElementById('search-input').addEventListener('input', function() {
-                const searchQuery = this.value.toLowerCase().split(' ');
+            function searchTable() {
+                const searchQuery = document.getElementById('search-input').value.toLowerCase().split(' ');
                 const rows = document.querySelectorAll('tbody tr');
                 let hasVisibleRows = false;
 
                 rows.forEach(row => {
-                    const organizationCell = row.querySelector('td:first-child');
-                    const cellWords = organizationCell.textContent.toLowerCase().split(' ');
-                    const match = searchQuery.some(queryWord => {
-                        return cellWords.some(cellWord => isMatch(queryWord, cellWord));
+                    const cells = row.querySelectorAll('td');
+                    const match = Array.from(cells).some(cell => {
+                        const cellWords = cell.textContent.toLowerCase().split(' ');
+                        return searchQuery.some(queryWord => {
+                            return cellWords.some(cellWord => isMatch(queryWord, cellWord));
+                        });
                     });
 
-                    if (match) {
+                    if (match || searchQuery.length === 0) {
                         row.classList.remove('hidden');
                         hasVisibleRows = true;
                     } else {
@@ -324,12 +334,13 @@
                     noResultsMessage.style.display = 'block';
                     table.style.display = 'none';
                 }
-            });
+            }
+
+            document.getElementById('search-button').addEventListener('click', searchTable);
 
             document.querySelector('tbody').addEventListener('click', function(event) {
                 if (event.target.tagName === 'TD') {
                     const row = event.target.parentElement;
-                    const detailsRow = row.nextElementSibling;
                     const isCollapsed = row.querySelector('td.collapsed');
 
                     if (isCollapsed !== null) {
@@ -347,7 +358,6 @@
                         row.querySelector('td:first-child').classList.remove('collapsed')
                     }
 
-                    // Проверяем, есть ли открытые строки
                     const anyRowOpen = Array.from(document.querySelectorAll('tbody tr')).some(row => {
                         return !row.querySelectorAll('td')[1].classList.contains('collapsed');
                     });
