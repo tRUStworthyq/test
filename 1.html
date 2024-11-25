@@ -260,67 +260,107 @@
             <p>К сожалению, такого ДК не найдено, попробуйте изменить запрос.</p>
         </div>
         <script>
-            document.getElementById('search-input').addEventListener('input', function() {
-            const searchQuery = this.value.toLowerCase();
-            const rows = document.querySelectorAll('tbody tr');
-            let hasVisibleRows = false;
+            function levenshteinDistance(a, b) {
+                const matrix = [];
 
-            rows.forEach(row => {
-                const organizationCell = row.querySelector('td:first-child');
-                if (organizationCell.textContent.toLowerCase().includes(searchQuery)) {
-                    row.classList.remove('hidden');
-                    hasVisibleRows = true;
+                for (let i = 0; i <= b.length; i++) {
+                    matrix[i] = [i];
+                }
+
+                for (let j = 0; j <= a.length; j++) {
+                    matrix[0][j] = j;
+                }
+
+                for (let i = 1; i <= b.length; i++) {
+                    for (let j = 1; j <= a.length; j++) {
+                        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j - 1] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j] + 1
+                            );
+                        }
+                    }
+                }
+
+                return matrix[b.length][a.length];
+            }
+
+            function isMatch(word, cellWord) {
+                const distance = levenshteinDistance(word, cellWord);
+                const maxLength = Math.max(word.length, cellWord.length);
+                const similarity = (maxLength - distance) / maxLength;
+                return similarity >= 0.8;
+            }
+
+            document.getElementById('search-input').addEventListener('input', function() {
+                const searchQuery = this.value.toLowerCase().split(' ');
+                const rows = document.querySelectorAll('tbody tr');
+                let hasVisibleRows = false;
+
+                rows.forEach(row => {
+                    const organizationCell = row.querySelector('td:first-child');
+                    const cellWords = organizationCell.textContent.toLowerCase().split(' ');
+                    const match = searchQuery.some(queryWord => {
+                        return cellWords.some(cellWord => isMatch(queryWord, cellWord));
+                    });
+
+                    if (match) {
+                        row.classList.remove('hidden');
+                        hasVisibleRows = true;
+                    } else {
+                        row.classList.add('hidden');
+                    }
+                });
+
+                const noResultsMessage = document.getElementById('no-results');
+                const table = document.querySelector('table');
+                if (hasVisibleRows) {
+                    noResultsMessage.style.display = 'none';
+                    table.style.display = 'table';
                 } else {
-                    row.classList.add('hidden');
+                    noResultsMessage.style.display = 'block';
+                    table.style.display = 'none';
                 }
             });
 
-            const noResultsMessage = document.getElementById('no-results');
-            const table = document.querySelector('table');
-            if (hasVisibleRows) {
-                noResultsMessage.style.display = 'none';
-                table.style.display = 'table';
-            } else {
-                noResultsMessage.style.display = 'block';
-                table.style.display = 'none';
-            }
-        });
+            document.querySelector('tbody').addEventListener('click', function(event) {
+                if (event.target.tagName === 'TD') {
+                    const row = event.target.parentElement;
+                    const detailsRow = row.nextElementSibling;
+                    const isCollapsed = row.querySelector('td.collapsed');
 
-        document.querySelector('tbody').addEventListener('click', function(event) {
-            if (event.target.tagName === 'TD') {
-                const row = event.target.parentElement;
-                const detailsRow = row.nextElementSibling;
-                const isCollapsed = row.querySelector('td.collapsed');
+                    if (isCollapsed !== null) {
+                        document.querySelectorAll('th.collapsed').forEach(cell => {
+                            cell.classList.remove('collapsed')
+                        });
+                        row.querySelectorAll('td.collapsed').forEach(cell => {
+                            cell.classList.remove('collapsed')
+                        });
+                    } else {
+                        row.querySelectorAll('td').forEach(cell => {
+                            console.log(cell)
+                            cell.classList.add('collapsed')
+                        });
+                        row.querySelector('td:first-child').classList.remove('collapsed')
+                    }
 
-                if (isCollapsed !== null) {
-                    document.querySelectorAll('th.collapsed').forEach(cell => {
-                        cell.classList.remove('collapsed')
+                    // Проверяем, есть ли открытые строки
+                    const anyRowOpen = Array.from(document.querySelectorAll('tbody tr')).some(row => {
+                        return !row.querySelectorAll('td')[1].classList.contains('collapsed');
                     });
-                    row.querySelectorAll('td.collapsed').forEach(cell => {
-                        cell.classList.remove('collapsed')
-                    });
-                } else {
-                    row.querySelectorAll('td').forEach(cell => {
-                        console.log(cell)
-                        cell.classList.add('collapsed')
-                    });
-                    row.querySelector('td:first-child').classList.remove('collapsed')
+                    console.log(anyRowOpen)
+
+                    if (!anyRowOpen) {
+                        document.querySelectorAll('th').forEach(cell => {
+                            cell.classList.add('collapsed')
+                        });
+                        document.querySelector('th:first-child').classList.remove('collapsed')
+                    }
                 }
-
-                // Проверяем, есть ли открытые строки
-                const anyRowOpen = Array.from(document.querySelectorAll('tbody tr')).some(row => {
-                    return !row.querySelectorAll('td')[1].classList.contains('collapsed');
-                });
-                console.log(anyRowOpen)
-
-                if (!anyRowOpen) {
-                    document.querySelectorAll('th').forEach(cell => {
-                        cell.classList.add('collapsed')
-                    });
-                    document.querySelector('th:first-child').classList.remove('collapsed')
-                }
-            }
-        });
+            });
         </script>
 </body>
 </html>
