@@ -86,7 +86,7 @@
 <body>
 
 <div class="form-container">
-    <h2>Регистрация</h2>
+    <h2 id="h2reg">Регистрация</h2>
     <form id="registrationForm">
         <div class="form-group">
             <label for="lastname">Фамилия:</label>
@@ -110,11 +110,11 @@
     </form>
 
     <div class="form-group">
-        <button id="loginButton">Войти</button>
+        <button id="loginButton">Уже зарегистрированы? Войти</button>
     </div>
 
     <div class="login-form">
-        <h2>Вход</h2>
+        <h2 id="h2log">Вход</h2>
         <form id="loginForm">
             <div class="form-group">
                 <label for="loginPhone">Номер телефона:</label>
@@ -125,7 +125,7 @@
                 <button type="submit">Войти</button>
             </div>
             <div class="form-group">
-                <button type="button" id="registerButton">Зарегистрироваться</button>
+                <button type="button" id="registerButton">Еще не зарегистрировались? Зарегистрироваться</button>
             </div>
         </form>
     </div>
@@ -133,12 +133,17 @@
 
 <script>
     document.getElementById('loginButton').addEventListener('click', function() {
+        document.getElementById('registrationForm').style.display = 'none';
+        document.getElementById('h2reg').style.display = 'none';
+        document.getElementById('loginButton').style.display = 'none';
         document.querySelector('.login-form').style.display = 'block';
     });
 
     document.getElementById('registerButton').addEventListener('click', function() {
         document.querySelector('.login-form').style.display = 'none';
         document.getElementById('registrationForm').style.display = 'block';
+        document.getElementById('h2reg').style.display = 'block';
+        document.getElementById('loginButton').style.display = 'block';
     });
 
     document.getElementById('registrationForm').addEventListener('submit', function(event) {
