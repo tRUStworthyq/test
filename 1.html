@@ -297,17 +297,23 @@
             }
 
             function isMatch(word, cellWord) {
+                if (word.trim() === '') {
+                    return true;
+                }
                 const distance = levenshteinDistance(word, cellWord);
                 const maxLength = Math.max(word.length, cellWord.length);
                 const similarity = (maxLength - distance) / maxLength;
-                return similarity >= 0.8;
+                if (similarity >= 0.55) {
+                    console.log(word, cellWord)
+                }
+                return similarity >= 0.55;
             }
 
             function searchTable() {
                 const searchQuery = document.getElementById('search-input').value.toLowerCase().split(' ');
                 const rows = document.querySelectorAll('tbody tr');
                 let hasVisibleRows = false;
-
+                console.log(isMatch('Вязать', "Вязание"))
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
                     const match = Array.from(cells).some(cell => {
@@ -352,7 +358,6 @@
                         });
                     } else {
                         row.querySelectorAll('td').forEach(cell => {
-                            console.log(cell)
                             cell.classList.add('collapsed')
                         });
                         row.querySelector('td:first-child').classList.remove('collapsed')
@@ -361,7 +366,6 @@
                     const anyRowOpen = Array.from(document.querySelectorAll('tbody tr')).some(row => {
                         return !row.querySelectorAll('td')[1].classList.contains('collapsed');
                     });
-                    console.log(anyRowOpen)
 
                     if (!anyRowOpen) {
                         document.querySelectorAll('th').forEach(cell => {

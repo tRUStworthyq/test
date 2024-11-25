@@ -67,13 +67,27 @@
         .form-group button:hover {
             background-color: #00838f;
         }
+
+        .login-form {
+            display: none;
+        }
+
+        .error {
+            border: 1px solid red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
 
 <div class="form-container">
     <h2>Регистрация</h2>
-    <form>
+    <form id="registrationForm">
         <div class="form-group">
             <label for="lastname">Фамилия:</label>
             <input type="text" id="lastname" name="lastname" required>
@@ -94,12 +108,80 @@
             <button type="submit">Зарегистрироваться</button>
         </div>
     </form>
+
+    <div class="form-group">
+        <button id="loginButton">Войти</button>
+    </div>
+
+    <div class="login-form">
+        <h2>Вход</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginPhone">Номер телефона:</label>
+                <input type="tel" id="loginPhone" name="loginPhone" required>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+            <div class="form-group">
+                <button type="submit">Войти</button>
+            </div>
+            <div class="form-group">
+                <button type="button" id="registerButton">Зарегистрироваться</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-    document.querySelector('.form-group button').addEventListener('click', function(event) {
-        event.preventDefault(); // Предотвращаем стандартное поведение кнопки (отправку формы)
-        window.location.href = '1.html'; // Перенаправляем на страницу 1.html
+    document.getElementById('loginButton').addEventListener('click', function() {
+        document.querySelector('.login-form').style.display = 'block';
+    });
+
+    document.getElementById('registerButton').addEventListener('click', function() {
+        document.querySelector('.login-form').style.display = 'none';
+        document.getElementById('registrationForm').style.display = 'block';
+    });
+
+    document.getElementById('registrationForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = {
+            lastname: document.getElementById('lastname').value,
+            firstname: document.getElementById('firstname').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value
+        };
+
+        fetch('http://localhost:5000/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Регистрация успешна!');
+                } else {
+                    alert('Ошибка при регистрации');
+                }
+            });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const phone = document.getElementById('loginPhone').value;
+
+        fetch('http://localhost:5000/check?phone=' + encodeURIComponent(phone))
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    window.location.href = '1.html';
+                } else {
+                    document.getElementById('loginPhone').classList.add('error');
+                    document.getElementById('errorMessage').textContent = 'Номер телефона не найден';
+                }
+            });
     });
 </script>
 
